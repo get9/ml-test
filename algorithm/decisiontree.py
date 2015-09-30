@@ -1,6 +1,7 @@
 import sys
-import base
 import numpy as np
+
+from . import base
 
 # Calculate gini impurity of vector {f}
 def gini(f):

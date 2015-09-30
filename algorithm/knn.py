@@ -1,7 +1,7 @@
 import sys
-import base
 import numpy as np
 from ..util import dataops
+from . import base
 
 class KNN(base.BaseClassifier):
     def __init__(self, k):
