@@ -1,9 +1,9 @@
 import sys
 import numpy as np
-from ..util import dataops
-from . import base
+from util import dataops
+from .baseclassifier import BaseClassifier
 
-class KNN(base.BaseClassifier):
+class KNN(BaseClassifier):
     def __init__(self, k):
         super().__init__()
         self.k = k

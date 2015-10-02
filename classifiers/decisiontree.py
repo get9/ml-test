@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 
-from . import base
+from .baseclassifier import BaseClassifier
 
 # Calculate gini impurity of vector {f}
 def gini(f):
@@ -34,7 +34,7 @@ class DTNode:
         return "val = {}; feature_idx = {}".format(self.val, self.feature_idx)
 
 # Main decision tree class
-class DecisionTree(base.BaseClassifier):
+class DecisionTree(BaseClassifier):
     def __init__(self, depth=3, nsplits=100):
         super().__init__()
         self.t = None
