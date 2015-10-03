@@ -1,4 +1,4 @@
-from ..util import dataops
+from util import dataops
 import numpy as np
 
 class CrossValidator:
