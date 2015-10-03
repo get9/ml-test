@@ -14,3 +14,9 @@ def fldivide(dataset):
 # e.g. [x^0 x^1 x^2 ... x^n]
 def make_nth_order(dataset, n):
     return np.hstack([dataset ** i for i in range(n+1)])
+
+# Expands {dataset} into [n, m * len(args)] features by apply each operation f
+# in args onto the dataset. Typically these are nonlinear transformations
+def basis_expand(dataset, *args):
+    args = [lambda x: x] + list(args)
+    return np.hstack([f(dataset) for f in args])

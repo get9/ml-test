@@ -3,14 +3,23 @@ import matplotlib.pyplot as plt
 import csv
 import sys
 
+import util
 from .baseregressor import BaseRegressor
 
 class NormalEquationLinearRegressor(BaseRegressor):
     def __init__(self):
         self.w = np.array([])
 
-    def train(self, x, y):
-        self.w = np.linalg.inv(x.T.dot(x)).dot(x.T).dot(y)
+    def train(self, x):
+        x, y = util.fldivide(x)
+        
+        # Check if any columns of x are all zeros (bad news for inversion)
+        try:
+            self.w = np.linalg.inv(x.T.dot(x)).dot(x.T).dot(y)
+        except np.linalg.linalg.LinAlgError as e:
+            print(e)
+            self.w = np.empty(len(x[0]))
+            self.w[:] = np.NAN
 
     def predict(self, x):
         return x.dot(self.w)
@@ -24,7 +33,8 @@ class GradientDescentLinearRegressor(BaseRegressor):
         self.learn_rate = learn_rate
         self.convergence = convergence
 
-    def train(self, x, y):
+    def train(self, x):
+        x, y = util.fldivide(x)
         iters = 0
         m, n = x.shape
         self.w = np.empty(n)
