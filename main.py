@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
-import numpy as np
-import os
-import dt
 import sys
-import knn
-import reader
-import dataops
-import crossval
+import os
+
+import numpy as np
 import matplotlib.pyplot as plt
+
+from simpleml.preprocess import reader, scaling
+from simpleml.classifiers.logreg import GradientDescentLogisticRegressor
+from simpleml.util.dataops import add_feature_bias, basis_expand, fljoin, fldivide
+
 
 def plot_misclass_err(ks, err, fig, dsetname):
     plt.figure(fig)
@@ -32,8 +33,8 @@ def generate_grid(dataset, resolution=50):
     xx, yy = np.meshgrid(X, Y)
     return X, Y, np.dstack((xx, yy))
 
-def plot_contour(dataset, dsetname, clf, fignum):
-    plt.figure(fignum)
+def plot_contour(dataset, clf, scalevals, figure_num=0, title=''):
+    plt.figure(figure_num)
     # Number of points on each axis of grid
     resolution = 50
     gridx, gridy, grid = generate_grid(dataset)
@@ -44,11 +45,14 @@ def plot_contour(dataset, dsetname, clf, fignum):
     # Predict over grid
     predicted_l = np.empty((resolution, resolution))
     for i in range(resolution):
-        predicted_l[i, :] = clf.predict(grid[i])
+        gridvals = basis_expand(grid[i], lambda x: x ** 2, lambda x: (x[:, 0] * x[:, 1]).reshape(len(x), 1))
+        #gridvals = grid[i]
+        gridvals *= scalevals
+        predicted_l[:, i] = clf.predict(gridvals)
 
     # Plot contour + dataset points
     plt.contourf(gridx, gridy, predicted_l)
-    zero, one = dataset[dataset[:, 2] == 0], dataset[dataset[:, 2] == 1]
+    zero, one = dataset[dataset[:, -1] == 0], dataset[dataset[:, -1] == 1]
     plt.plot(zero[:, 0], zero[:, 1], 'yo', label='0')
     plt.plot(one[:, 0], one[:, 1], 'g^', label='1')
     xmin, xmax = np.min(gridx), np.max(gridx)
@@ -57,10 +61,7 @@ def plot_contour(dataset, dsetname, clf, fignum):
     plt.legend(loc='upper left')
     plt.xlabel("x values")
     plt.ylabel("y values")
-    if (isinstance(clf, knn.KNN)):
-        plt.title("dataset: {}; k = {}".format(dsetname, clf.k))
-    else:
-        plt.title("dataset: {}".format(dsetname))
+    plt.title(title)
 
 def main():
     if len(sys.argv) < 2:
@@ -68,18 +69,19 @@ def main():
         sys.exit(1)
 
     filenames = sys.argv[1:]
-    bestk = [1,6,7,7]
-    for i in range(len(filenames)):
-        dsetname = os.path.basename(filenames[i])
-        dataset = reader.read(filenames[i])
-        np.random.shuffle(dataset)
-        cv = crossval.CrossValidator()
-        ks = []
-        errs = []
-        for j in range(1, 11):
-            clf = knn.KNN(j)
-            cv.clf = clf
-            err = cv.kfold(dataset)
-            print("{} {}".format(j, err))
+    for i, fname in enumerate(filenames, 1):
+        dsetname = os.path.basename(fname)
+        dataset = reader.read(fname)
+        features, labels = fldivide(dataset)
+        features = basis_expand(features,
+            lambda x: x ** 2,
+            lambda x: (x[:, 0] * x[:, 1]).reshape(len(x), 1),
+        )
+        features, scalevals = scaling.unit_scale(features)
+        dataset = fljoin(features, labels)
+        clf = GradientDescentLogisticRegressor(bias=False, regularization=5)
+        plot_contour(dataset, clf, scalevals, figure_num=i, \
+                title='Contour plot for {}'.format(dsetname))
+    plt.show()
 
 main()

@@ -27,21 +27,22 @@ def main():
         sys.exit(1)
     
     train_file, test_file = sys.argv[1:]
-    train_data, train_labels = util.fldivide(read(train_file)) 
-    test_data, test_labels   = util.fldivide(read(test_file)) 
+    train_data, train_labels = util.fldivide(read(train_file))
+    test_data, test_labels   = util.fldivide(read(test_file))
     
     for i in range(5):
         nth_train_data = util.make_nth_order(train_data, i)
+        nth_train = np.hstack((nth_train_data, train_labels.reshape((len(train_labels), 1))))
         nth_test_data  = util.make_nth_order(test_data, i)
 
-        model = GradientDescentLinearRegressor(learn_rate=0.4)
-        model.train(nth_train_data, train_labels)
+        model = GradientDescentLinearRegressor(learn_rate=0.4, regularization=1e1)
+        model.train(nth_train)
         predicted = model.predict(nth_test_data)
 
         mse = model.error(predicted, test_labels)
 
         plot_scatter_curve(test_data, test_labels, model.w, fignum=i,
-                title="Normal equations, order {}, mse={}".format(i, mse))
+                title="Gradient Descent, order {}, alpha={}, lambda={}, mse={}".format(i, model.learn_rate, model.l, mse))
 
     plt.show()
 
