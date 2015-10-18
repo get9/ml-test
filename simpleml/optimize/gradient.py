@@ -35,5 +35,4 @@ class GradientDescentOptimizer:
 
         print('Gradient descent finished: {} iters, cost = {}'.format(iters, \
                 np.linalg.norm(sigmoid(xs @ ws) - ys)))
-        print(ws)
         return ws

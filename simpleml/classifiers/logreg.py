@@ -19,8 +19,7 @@ class GradientDescentLogisticRegressor(BaseClassifier):
         self.hfunc = lambda x, y: sigmoid(x @ y)
         self.costfunc = log_likelihood
 
-    def train(self, xs):
-        xs, ys = fldivide(xs)
+    def train(self, xs, ys):
         if self.bias:
             xs = add_feature_bias(xs)
         g = GradientDescentOptimizer(self.hfunc, self.costfunc, convergence=1e-6, \

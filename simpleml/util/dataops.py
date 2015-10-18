@@ -21,7 +21,6 @@ def make_nth_order(dataset, n):
 # Expands {dataset} into [n, m * len(args)] features by apply each operation f
 # in args onto the dataset. Typically these are nonlinear transformations
 def basis_expand(dataset, *args):
-    args = [lambda x: x] + list(args)
     return np.hstack([f(dataset) for f in args])
 
 def add_feature_bias(dataset):
